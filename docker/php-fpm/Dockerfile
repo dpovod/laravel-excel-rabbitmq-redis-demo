@@ -1,23 +1,12 @@
 FROM php:7.3-fpm
 
-# Install Dependences
 RUN apt-get update \
     && apt-get upgrade -yq \
     && apt-get install -yq apt-utils \
     libmcrypt-dev libxml2-dev \
     librabbitmq4 librabbitmq-dev \
-    libssl-dev
-
-# Install Dependences
-#RUN apt-get update \
-#    && apt-get upgrade -yq \
-#    && apt-get install -yq apt-utils \
-#    libpq-dev libmcrypt-dev libreadline-dev libxslt-dev libxml2-dev libicu-dev zlib1g-dev libmemcached-dev curl \
-#    librabbitmq4 librabbitmq-dev \
-#    libssl-dev \
-#    git \
-#    libtidy-dev libtidy5deb1 libbz2-dev libfontconfig \
-#    p7zip-full
+    libssl-dev \
+    && apt-get install -y cron
 
 RUN apt-get update \
     && docker-php-ext-install bcmath \
@@ -31,13 +20,17 @@ RUN apt-get update \
     && pecl install amqp-1.10.2 \
     && docker-php-ext-enable amqp \
     && pecl install mcrypt-1.0.3 \
-    && docker-php-ext-enable mcrypt
+    && docker-php-ext-enable mcrypt \
+    && pecl install xdebug-2.9.8 \
+    && docker-php-ext-enable xdebug
 
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer --version=2.0.0 \
     && php -r "unlink('composer-setup.php');"
 
-USER www-data
+RUN chmod 0644 -R /etc/cron.d
+
+COPY config/ /
 
 COPY entrypoint.sh /entrypoint.sh
 

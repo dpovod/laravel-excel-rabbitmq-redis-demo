@@ -21,6 +21,16 @@ services:
     working_dir: ${APP_BASE_PATH}/
     volumes:
       - ./:${APP_BASE_PATH}/
+    environment:
+      - XDEBUG_CONFIG=enable=${XDEBUG_ENABLE} \
+                       remote_enable=${XDEBUG_REMOTE_ENABLE} \
+                       profiler_enable=${XDEBUG_PROFILER_ENABLE} \
+                       remote_host=${XDEBUG_REMOTE_HOST} \
+                       remote_port=${XDEBUG_REMOTE_PORT} \
+                       remote_autostart=${XDEBUG_REMOTE_AUTOSTART} \
+                       idekey=${XDEBUG_IDE_KEY} \
+                       remote_connect_back=${XDEBUG_REMOTE_CONNECT_BACK}
+      - PHP_IDE_CONFIG=serverName=laravel-excel-rabbitmq-redis-demo
 
   db:
     container_name: "${APP_ENV}.${APP_NAME}.db"
