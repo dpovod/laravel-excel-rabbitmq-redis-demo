@@ -43,14 +43,14 @@ services:
 
   rabbitmq:
     container_name: "${APP_ENV}.${APP_NAME}.rabbitmq"
-    image: rabbitmq:3.8.9
+    image: bitnami/rabbitmq:3.8.9
+    user: root
     ports:
       - '${EXPOSE_RABBITMQ_PORT}:5672'
       - '${EXPOSE_RABBITMQ_WEB_PORT}:15672'
     environment:
       - RABBITMQ_USERNAME=admin
       - RABBITMQ_PASSWORD=admin
-      - RABBITMQ_PLUGINS=rabbitmq_management
     volumes:
       - rabbitmq-data:/bitnami
 
