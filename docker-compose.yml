@@ -43,11 +43,16 @@ services:
 
   rabbitmq:
     container_name: "${APP_ENV}.${APP_NAME}.rabbitmq"
-    image: rabbitmq:3.8.9
+    image: bitnami/rabbitmq:3.8.9
+    user: root
+    ports:
+      - '${EXPOSE_RABBITMQ_PORT}:5672'
+      - '${EXPOSE_RABBITMQ_WEB_PORT}:15672'
     environment:
-      - RABBITMQ_user=admin
+      - RABBITMQ_USERNAME=admin
       - RABBITMQ_PASSWORD=admin
-      - RABBITMQ_NODE_PORT_NUMBER=5672
+    volumes:
+      - rabbitmq-data:/bitnami
 
   redis:
     container_name: "${APP_ENV}.${APP_NAME}.redis"
@@ -65,3 +70,4 @@ networks:
 volumes:
   redis-data:
   db-data:
+  rabbitmq-data:

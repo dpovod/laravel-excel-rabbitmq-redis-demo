@@ -67,6 +67,12 @@ return [
             'block_for' => null,
         ],
 
+        'rabbitmq' => [
+            'driver' => 'rabbitmq',
+            'connection' => 'rabbitmq',
+            'queue' => env('RABBITMQ_QUEUE', 'default'),
+            'retry_after' => 90,
+        ],
     ],
 
     /*
