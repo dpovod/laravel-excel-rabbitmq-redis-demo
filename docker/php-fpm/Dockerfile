@@ -13,7 +13,8 @@ RUN apt-get update \
     && docker-php-ext-install ctype \
     && docker-php-ext-install json \
     && docker-php-ext-install mbstring \
-    && docker-php-ext-install pdo
+    && docker-php-ext-install pdo \
+    && docker-php-ext-install sockets
 
 RUN apt-get update \
     && pecl channel-update pecl.php.net \
