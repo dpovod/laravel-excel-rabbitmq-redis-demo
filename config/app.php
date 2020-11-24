@@ -1,6 +1,6 @@
 <?php
 
-use App\Providers\QueueServiceProvider;
+use App\Providers\RabbitmqQueueServiceProvider;
 
 return [
 
@@ -177,7 +177,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
-        QueueServiceProvider::class,
+        RabbitmqQueueServiceProvider::class,
     ],
 
     /*

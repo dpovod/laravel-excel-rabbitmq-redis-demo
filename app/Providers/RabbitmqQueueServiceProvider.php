@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Extensions\Queue\Connectors\RabbitmqConnector;
 use Illuminate\Support\ServiceProvider;
 
-class QueueServiceProvider extends ServiceProvider
+class RabbitmqQueueServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
