@@ -1,20 +1,27 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Symfony\Component\HttpFoundation\Response;
+use App\Http\Requests\Base\ApiRequest;
 
-class UploadExcelFileRequest extends FormRequest
+/**
+ * Class UploadExcelFileRequest
+ * @package App\Http\Requests
+ */
+class UploadExcelFileRequest extends ApiRequest
 {
+    private const ALLOWED_MIME_TYPES = [
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+
     /**
      * Determine if the user is authorized to make this request.
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
@@ -24,13 +31,13 @@ class UploadExcelFileRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             'file' => [
                 'required',
                 'file',
-                'mimetypes:application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'mimetypes:' . implode(',', self::ALLOWED_MIME_TYPES),
             ],
         ];
     }
@@ -40,21 +47,11 @@ class UploadExcelFileRequest extends FormRequest
      *
      * @return array
      */
-    public function messages()
+    public function messages(): array
     {
         return [
             'file.mimetypes' => 'File must be an xls/xlsx',
             'file.*' => 'File is required',
         ];
-    }
-
-    /**
-     * @param Validator $validator
-     * @throws HttpResponseException
-     */
-    public function failedValidation(Validator $validator)
-    {
-        $content = json_encode(['success' => false, 'message' => $validator->errors()->first()]);
-        throw new HttpResponseException(new Response($content, Response::HTTP_BAD_REQUEST));
     }
 }

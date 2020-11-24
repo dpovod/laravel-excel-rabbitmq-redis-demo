@@ -85,7 +85,7 @@ class RabbitmqQueue extends Queue implements QueueContract
      */
     public function pushRaw($payload, $queue = null, array $options = [])
     {
-        return $this->pushToQueue($queue, $payload);
+        return $this->pushToQueue($payload, $queue = null);
     }
 
     /**
@@ -100,9 +100,9 @@ class RabbitmqQueue extends Queue implements QueueContract
      */
     public function later($delay, $job, $data = '', $queue = null)
     {
-        return $this->pushToQueue($queue, $this->createPayload(
-            $job, $this->getQueue($queue), $data
-        ), $delay);
+        $payload = $this->createPayload($job, $this->getQueue($queue), $data);
+
+        return $this->pushToQueue($payload, $queue, $delay);
     }
 
     /**
@@ -130,21 +130,20 @@ class RabbitmqQueue extends Queue implements QueueContract
      */
     public function release($queue, $job, $delay)
     {
-        return $this->pushToQueue($queue, $job->payload, $delay, $job->attempts);
+        return $this->pushToQueue($job->payload, $queue, $delay, $job->attempts);
     }
 
     /**
      * Push a raw payload to the database with a given delay.
      *
-     * @param string|null $queue
      * @param string $payload
-     * @param \DateTimeInterface|\DateInterval|int $delay
-     * @param int $attempts
+     * @param string|null $queue
      * @return mixed
      * @throws \Exception
      */
-    protected function pushToQueue(string $queue, string $payload, $delay = 0, $attempts = 0)
+    protected function pushToQueue(string $payload, ?string $queue = null)
     {
+        $queue = $this->getQueue($queue);
         $channel = new AMQPChannel($this->amqpConnection);
         $channel->queue_declare($queue, false, true, false, false);
         $msg = new AMQPMessage($payload, ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
@@ -165,7 +164,7 @@ class RabbitmqQueue extends Queue implements QueueContract
         $queue = $this->getQueue($queue);
 
         $channel = new AMQPChannel($this->amqpConnection);
-        $message = $channel->basic_get($queue);
+        $message = $channel->basic_get($queue, true);
 
         return $message ?
             new RabbitmqJob($this->container, $this, $message->body, null, $this->connectionName, $queue ?: $this->default)

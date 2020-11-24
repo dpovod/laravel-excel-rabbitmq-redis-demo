@@ -27,7 +27,6 @@ export default {
       form: {
         file: null,
       },
-      noty: this.$noty,
     }
   },
   methods: {
@@ -35,7 +34,7 @@ export default {
       event.preventDefault();
       let formData = new FormData();
       formData.append('file', this.form.file);
-      const NOTY = this.noty;
+      const NOTY = this.$noty;
 
       axios.post('/upload/submit-file',
           formData,

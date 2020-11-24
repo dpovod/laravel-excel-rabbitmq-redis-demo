@@ -6,6 +6,7 @@ namespace App\Extensions\Queue\Connectors;
 use App\Extensions\Queue\RabbitmqQueue;
 use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Queue\Connectors\ConnectorInterface;
+use Illuminate\Support\Facades\Config;
 use PhpAmqpLib\Connection\AMQPSocketConnection;
 
 class RabbitmqConnector implements ConnectorInterface
@@ -19,11 +20,13 @@ class RabbitmqConnector implements ConnectorInterface
      */
     public function connect(array $config)
     {
+        $rabbitmqConfig = Config::get('rabbitmq');
+
         $connection = new AMQPSocketConnection(
-            env('RABBITMQ_HOST', 'localhost'),
-            env('RABBITMQ_PORT', 5672),
-            env('RABBITMQ_USERNAME', 'guest'),
-            env('RABBITMQ_PASSWORD', 'guest')
+            $rabbitmqConfig['host'],
+            $rabbitmqConfig['port'],
+            $rabbitmqConfig['user'],
+            $rabbitmqConfig['password']
         );
 
         return new RabbitmqQueue($connection, $config['queue'], $config['retry_after'] ?? 60);

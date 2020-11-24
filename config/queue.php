@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('QUEUE_CONNECTION', 'sync'),
+    'default' => env('QUEUE_CONNECTION', 'rabbitmq'),
 
     /*
     |--------------------------------------------------------------------------
@@ -70,7 +70,7 @@ return [
         'rabbitmq' => [
             'driver' => 'rabbitmq',
             'connection' => 'rabbitmq',
-            'queue' => env('RABBITMQ_QUEUE', 'default'),
+            'queue' => env('RABBITMQ_QUEUE', 'jobs'),
             'retry_after' => 90,
         ],
     ],

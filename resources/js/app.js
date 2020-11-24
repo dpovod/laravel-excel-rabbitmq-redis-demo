@@ -7,10 +7,10 @@
 require('./bootstrap');
 import BootstrapVue from 'bootstrap-vue'
 import axios from 'axios'
+window.axios = axios;
 import Vue from 'vue'
 window.Vue = require('vue');
 Vue.use(BootstrapVue);
-window.axios = axios;
 import VueNoty from 'vuejs-noty'
 Vue.use(VueNoty)
 

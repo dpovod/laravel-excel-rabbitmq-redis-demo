@@ -5,8 +5,8 @@ RUN apt-get update \
     && apt-get install -yq apt-utils \
     libmcrypt-dev libxml2-dev \
     librabbitmq4 librabbitmq-dev \
-    libssl-dev \
-    && apt-get install -y cron
+    libssl-dev libzip-dev zip unzip \
+    && apt-get install -yq cron supervisor
 
 RUN apt-get update \
     && docker-php-ext-install bcmath \
@@ -14,7 +14,8 @@ RUN apt-get update \
     && docker-php-ext-install json \
     && docker-php-ext-install mbstring \
     && docker-php-ext-install pdo \
-    && docker-php-ext-install sockets
+    && docker-php-ext-install sockets \
+    && docker-php-ext-install zip
 
 RUN apt-get update \
     && pecl channel-update pecl.php.net \
@@ -23,7 +24,10 @@ RUN apt-get update \
     && pecl install mcrypt-1.0.3 \
     && docker-php-ext-enable mcrypt \
     && pecl install xdebug-2.9.8 \
-    && docker-php-ext-enable xdebug
+    && docker-php-ext-enable xdebug \
+    && pecl install -o -f redis \
+    && rm -rf /tmp/pear \
+    && docker-php-ext-enable redis
 
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer --version=2.0.0 \
