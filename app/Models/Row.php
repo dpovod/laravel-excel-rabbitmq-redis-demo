@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Row extends Model
 {
+    public const UPDATED_AT = null;
+
     /** @var string */
     protected $table = 'rows';
 

@@ -5,7 +5,7 @@ RUN apt-get update \
     && apt-get install -yq apt-utils \
     libmcrypt-dev libxml2-dev \
     librabbitmq4 librabbitmq-dev \
-    libssl-dev libzip-dev zip unzip \
+    libssl-dev libzip-dev zip unzip libpng-dev \
     && apt-get install -yq cron supervisor
 
 RUN apt-get update \
@@ -14,8 +14,10 @@ RUN apt-get update \
     && docker-php-ext-install json \
     && docker-php-ext-install mbstring \
     && docker-php-ext-install pdo \
+    && docker-php-ext-install pdo_mysql \
     && docker-php-ext-install sockets \
-    && docker-php-ext-install zip
+    && docker-php-ext-install zip \
+    && docker-php-ext-install gd
 
 RUN apt-get update \
     && pecl channel-update pecl.php.net \

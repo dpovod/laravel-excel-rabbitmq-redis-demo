@@ -38,9 +38,12 @@ services:
     image: mariadb:10.5
     restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=${DB_MAIN_SERVICE_USERNAME}
+      - MYSQL_PASSWORD${DB_MAIN_SERVICE_PASSWORD}
+    command: --init-file /data/application/init.sql
     volumes:
       - db-data:/var/lib/mysql
+      - ./docker/db/sql/init.sql:/data/application/init.sql
 
   rabbitmq:
     container_name: "${APP_ENV}.${APP_NAME}.rabbitmq"
@@ -50,14 +53,14 @@ services:
       - '${EXPOSE_RABBITMQ_PORT}:5672'
       - '${EXPOSE_RABBITMQ_WEB_PORT}:15672'
     environment:
-      - RABBITMQ_USERNAME=admin
-      - RABBITMQ_PASSWORD=admin
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
     volumes:
       - rabbitmq-data:/bitnami
 
   redis:
     container_name: "${APP_ENV}.${APP_NAME}.redis"
-    image: 'bitnami/redis:5.0.8'
+    image: bitnami/redis:5.0.8
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     volumes:

@@ -14,11 +14,10 @@ class CreateRowsTable extends Migration
     public function up()
     {
         Schema::connection('main_service')->create('rows', function (Blueprint $table) {
-            $table->uuid('uuid');
             $table->integer('id');
             $table->string('name', 64);
             $table->timestamp('date');
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable();
         });
     }
 

@@ -3,12 +3,17 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Imports\RowsImport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\Exception;
 
 /**
  * Class ParseExcelFileToDb
@@ -35,9 +40,17 @@ class ParseExcelFileToDb implements ShouldQueue
      * Execute the job.
      *
      * @return void
+     * @throws Exception
      */
     public function handle()
     {
-        Log::info($this->filePath);
+        $filePath = storage_path('app/' . $this->filePath);
+        $inputFileType = IOFactory::identify($filePath);
+        $reader = IOFactory::createReader($inputFileType);
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($filePath);
+        $rowsCount = $spreadsheet->getActiveSheet()->getHighestDataRow();
+
+        Excel::import(new RowsImport($rowsCount, Str::uuid()->toString()), $this->filePath);
     }
 }
