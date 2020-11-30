@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Extensions\Queue;
 
+use App\Extensions\Queue\Connectors\RabbitmqConnector;
 use App\Extensions\Queue\Jobs\RabbitmqJob;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
@@ -19,6 +20,9 @@ class RabbitmqQueue extends Queue implements QueueContract
      * @var AbstractConnection
      */
     protected $amqpConnection;
+
+    /** @var AMQPChannel */
+    protected $amqpChannel;
 
     /**
      * The name of the default queue.
@@ -53,11 +57,14 @@ class RabbitmqQueue extends Queue implements QueueContract
      *
      * @param string|null $queue
      * @return int
+     * @throws \Exception
      */
     public function size($queue = null)
     {
-        //@TODO: здесь должно быть кол-во сообщений в очереди
-        return 0;
+        $queue = $this->getQueue($queue);
+        $queueInfo = $this->getAmqpChannel()->queue_declare($queue, false, true, false, false);
+
+        return $queueInfo[1];
     }
 
     /**
@@ -85,7 +92,7 @@ class RabbitmqQueue extends Queue implements QueueContract
      */
     public function pushRaw($payload, $queue = null, array $options = [])
     {
-        return $this->pushToQueue($queue, $payload);
+        return $this->pushToQueue($payload, $queue = null);
     }
 
     /**
@@ -100,9 +107,7 @@ class RabbitmqQueue extends Queue implements QueueContract
      */
     public function later($delay, $job, $data = '', $queue = null)
     {
-        return $this->pushToQueue($queue, $this->createPayload(
-            $job, $this->getQueue($queue), $data
-        ), $delay);
+        throw new \Exception('Method not allowed');
     }
 
     /**
@@ -130,26 +135,24 @@ class RabbitmqQueue extends Queue implements QueueContract
      */
     public function release($queue, $job, $delay)
     {
-        return $this->pushToQueue($queue, $job->payload, $delay, $job->attempts);
+        throw new \Exception('Method not allowed');
     }
 
     /**
      * Push a raw payload to the database with a given delay.
      *
-     * @param string|null $queue
      * @param string $payload
-     * @param \DateTimeInterface|\DateInterval|int $delay
-     * @param int $attempts
+     * @param string|null $queue
      * @return mixed
      * @throws \Exception
      */
-    protected function pushToQueue(string $queue, string $payload, $delay = 0, $attempts = 0)
+    protected function pushToQueue(string $payload, ?string $queue = null)
     {
-        $channel = new AMQPChannel($this->amqpConnection);
-        $channel->queue_declare($queue, false, true, false, false);
+        $queue = $this->getQueue($queue);
+        $this->getAmqpChannel()->queue_declare($queue, false, true, false, false);
         $msg = new AMQPMessage($payload, ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
 
-        return $channel->basic_publish($msg, '', $queue);
+        return $this->getAmqpChannel()->basic_publish($msg, '', $queue);
     }
 
     /**
@@ -163,9 +166,8 @@ class RabbitmqQueue extends Queue implements QueueContract
     public function pop($queue = null)
     {
         $queue = $this->getQueue($queue);
-
-        $channel = new AMQPChannel($this->amqpConnection);
-        $message = $channel->basic_get($queue);
+        $this->getAmqpChannel()->queue_declare($queue, false, true, false, false);
+        $message = $this->getAmqpChannel()->basic_get($queue, true);
 
         return $message ?
             new RabbitmqJob($this->container, $this, $message->body, null, $this->connectionName, $queue ?: $this->default)
@@ -192,16 +194,34 @@ class RabbitmqQueue extends Queue implements QueueContract
      * @param string|null $queue
      * @return string
      */
-    public function getQueue($queue)
+    public function getQueue(?string $queue = null)
     {
         return $queue ?: $this->default;
     }
 
     /**
-     * @return AbstractConnection
+     * @return AMQPChannel
+     * @throws \Exception
      */
-    public function getAmqpConnection()
+    private function getAmqpChannel(): AMQPChannel
     {
-        return $this->amqpConnection;
+        if (!$this->amqpChannel || !$this->amqpChannel->is_open() || !$this->amqpConnection->isConnected()) {
+            $this->initAmqpChannel();
+        }
+
+        return $this->amqpChannel;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function initAmqpChannel()
+    {
+        try {
+            $this->amqpChannel = new AMQPChannel($this->amqpConnection);
+        } catch (\Exception $e) {
+            $this->amqpConnection = (new RabbitmqConnector())->createAmqpConnection();
+            $this->amqpChannel = new AMQPChannel($this->amqpConnection);
+        }
     }
 }

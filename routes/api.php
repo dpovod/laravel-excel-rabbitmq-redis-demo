@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Backend\RowsController;
+use App\Http\Controllers\Backend\UploadController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +15,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::prefix('upload')->group(function () {
+    Route::post('submit-file', [UploadController::class, 'submitFile'])->name('api.submitFile');
+});
+
+Route::prefix('rows')->group(function () {
+    Route::get('list', [RowsController::class, 'getList'])->name('api.rowsList');
 });
