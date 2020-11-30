@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Page Title')
+@section('title', 'Uploaded Rows')
 
 @section('content')
-    <p>Здесь будет таблица</p>
+    <excel-rows-table></excel-rows-table>
 @endsection

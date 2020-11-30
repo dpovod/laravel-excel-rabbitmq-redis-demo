@@ -1,8 +1,10 @@
 <html lang="ru">
 <head>
     <title>Laravel Demo Project - @yield('title')</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{asset('css/app.css')}}">
+    @section('meta')
+
+    @show
 </head>
 <body>
 
@@ -13,11 +15,11 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-            <li class="nav-item {{ \Route::currentRouteName() === 'showUploadForm' ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('showUploadForm')}}">Upload</a>
+            <li class="nav-item {{ \Route::currentRouteName() === 'web.showUploadForm' ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('web.showUploadForm')}}">Upload</a>
             </li>
-            <li class="nav-item {{ \Route::currentRouteName() === 'listRows' ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('listRows')}}">Rows</a>
+            <li class="nav-item {{ \Route::currentRouteName() === 'web.listRows' ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('web.listRows')}}">Rows</a>
             </li>
         </ul>
     </div>
@@ -25,8 +27,14 @@
 
 <div id="app" class="container">
     @yield('content')
+    <import-status-notifier></import-status-notifier>
 </div>
 
+<div id="loading" class="loading d-none">
+    <div id="loader-img">
+        <img src="/img/svg/loader.svg">
+    </div>
+</div>
 <script src="{{asset('js/app.js')}}" defer></script>
 </body>
 </html>

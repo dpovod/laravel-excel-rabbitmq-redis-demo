@@ -2,54 +2,70 @@
 
 namespace App\Imports;
 
+use App\Events\ImportProgressChanged;
 use App\Models\Row;
 use Illuminate\Support\Facades\Cache;
-use Maatwebsite\Excel\Concerns\RegistersEventListeners;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\RemembersRowNumber;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 use Maatwebsite\Excel\Concerns\WithColumnLimit;
-use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithLimit;
-use Maatwebsite\Excel\Events\AfterImport;
-use Maatwebsite\Excel\Events\BeforeImport;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 
-class RowsImport implements ToModel, WithHeadingRow, WithBatchInserts, WithLimit, WithColumnLimit,
-    WithCalculatedFormulas, WithEvents
+class RowsImport implements
+    ToModel,
+    WithHeadingRow,
+    WithBatchInserts,
+    WithLimit,
+    WithColumnLimit,
+    WithCalculatedFormulas
 {
-    use RemembersRowNumber, RegistersEventListeners;
+    use RemembersRowNumber;
 
     /** @var int */
     private $limitRows;
 
     /** @var string */
-    public $importId;
+    public $importJobUuid;
 
     /**
      * RowsImport constructor.
      * @param int $totalRowsCount
-     * @param string $importId
+     * @param string $importJobUuid
+     * @throws \Exception
      */
-    public function __construct(int $totalRowsCount, string $importId)
+    public function __construct(int $totalRowsCount, string $importJobUuid)
     {
+        if ($totalRowsCount === 1) {
+            throw new \Exception('You cannot import a file without data (your file contains only a header)');
+        }
+
         $this->limitRows = $totalRowsCount;
-        $this->importId = $importId;
+        $this->importJobUuid = $importJobUuid;
     }
 
+    /**
+     * @param array $row
+     * @return Row|null
+     * @throws \Exception
+     */
     public function model(array $row)
     {
-        $rowNumber = $this->getRowNumber();
+        $rowNumber = $this->getRowNumber() - 1;
 
-        if ($rowNumber % $this->batchSize() === 0) {
+        if ($rowNumber % $this->batchSize() === 0 || $rowNumber === $this->limitRows) {
             $this->setProgress($rowNumber);
         }
 
-        if (!$row['id']) {
+        // to prevent processing empty rows
+        if (!$row['id'] || !$row['name'] || !$row['date']) {
             return null;
         }
+
+        $this->validateSingleRow($row);
 
         return new Row([
             'id' => $row['id'],
@@ -58,24 +74,37 @@ class RowsImport implements ToModel, WithHeadingRow, WithBatchInserts, WithLimit
         ]);
     }
 
-    /***
-     * @param BeforeImport $event
+    /**
+     * @return string[]
      */
-    public static function beforeImport(BeforeImport $event)
+    private function validationRules(): array
     {
-        /** @var RowsImport $import */
-        $import = $event->getConcernable();
-        $import->setProgress(0);
+        return [
+            'id' => 'required|numeric',
+            'name' => 'required|string',
+            'date' => 'required|date',
+        ];
     }
 
     /**
-     * @param AfterImport $event
+     * @param array $row
+     * @throws \Exception
      */
-    public static function afterImport(AfterImport $event)
+    private function validateSingleRow(array $row)
     {
-        /** @var RowsImport $import */
-        $import = $event->getConcernable();
-        $import->setProgress($import->limitRows);
+        try {
+            $inputDate = $row['date'] ?? null;
+            $row['date'] = isset($row['date']) ? Date::excelToDateTimeObject($row['date']) : null;
+        } catch (\ErrorException $e) {
+            $row['date'] = $inputDate;
+        }
+
+        $validator = Validator::make($row, $this->validationRules());
+
+        if ($validator->fails()) {
+            $error = $validator->errors()->first();
+            throw new \Exception("Error '$error' in row {$this->getRowNumber()}");
+        }
     }
 
     /**
@@ -83,8 +112,9 @@ class RowsImport implements ToModel, WithHeadingRow, WithBatchInserts, WithLimit
      */
     public function setProgress(int $processedRows)
     {
-        $percents = $processedRows / $this->limitRows * 100;
+        $percents = (int)($processedRows / $this->limitRows * 100);
         Cache::store('redis')->put($this->getProgressKey(), $percents);
+        event(new ImportProgressChanged($this->importJobUuid, $percents));
     }
 
     /**
@@ -116,6 +146,6 @@ class RowsImport implements ToModel, WithHeadingRow, WithBatchInserts, WithLimit
      */
     private function getProgressKey(): string
     {
-        return 'IMPORT_PROGRESS:' . $this->importId;
+        return 'IMPORT_PROGRESS:' . $this->importJobUuid;
     }
 }

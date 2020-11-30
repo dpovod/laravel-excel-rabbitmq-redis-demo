@@ -35,12 +35,12 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer --version=2.0.0 \
     && php -r "unlink('composer-setup.php');"
 
-#RUN apt-get update && apt install -y nodejs npm
 RUN curl -sL https://deb.nodesource.com/setup_14.x -o nodesource_setup.sh \
     && rm -rf /var/lib/apt/lists/* \
     && bash nodesource_setup.sh \
     && apt install -y nodejs \
-    && rm nodesource_setup.sh
+    && rm nodesource_setup.sh \
+    && npm install -g laravel-echo-server
 
 RUN chmod 0644 -R /etc/cron.d
 

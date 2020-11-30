@@ -166,6 +166,7 @@ class RabbitmqQueue extends Queue implements QueueContract
     public function pop($queue = null)
     {
         $queue = $this->getQueue($queue);
+        $this->getAmqpChannel()->queue_declare($queue, false, true, false, false);
         $message = $this->getAmqpChannel()->basic_get($queue, true);
 
         return $message ?

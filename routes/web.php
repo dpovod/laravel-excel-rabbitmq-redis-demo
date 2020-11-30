@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\RowsController;
-use App\Http\Controllers\UploadController;
+use App\Http\Controllers\Frontend\RowsController;
+use App\Http\Controllers\Frontend\UploadController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,10 +20,9 @@ Route::get('/', function () {
 })->name('home');
 
 Route::prefix('upload')->group(function () {
-    Route::get('/', [UploadController::class, 'showUploadForm'])->name('showUploadForm');
-    Route::post('submit-file', [UploadController::class, 'submitFile'])->name('submitFile');
+    Route::get('/', [UploadController::class, 'showUploadForm'])->name('web.showUploadForm');
 });
 
 Route::prefix('rows')->group(function () {
-    Route::get('/', [RowsController::class, 'listRows'])->name('listRows');
+    Route::get('/', [RowsController::class, 'listRows'])->name('web.listRows');
 });

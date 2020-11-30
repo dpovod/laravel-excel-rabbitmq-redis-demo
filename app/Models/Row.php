@@ -34,4 +34,17 @@ class Row extends Model
     protected $casts = [
         'date' => 'datetime',
     ];
+
+    /** @var string[] */
+    protected $appends = [
+        'date_string',
+    ];
+
+    /**
+     * @return string
+     */
+    public function getDateStringAttribute(): string
+    {
+        return $this->date->format('Y-m-d H:i:s');
+    }
 }

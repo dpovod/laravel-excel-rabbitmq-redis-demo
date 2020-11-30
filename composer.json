@@ -1,7 +1,7 @@
 {
-    "name": "laravel/laravel",
+    "name": "dpovod/laravel-excel-rabbitmq-redis-demo",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "Laravel Demo Project",
     "keywords": [
         "framework",
         "laravel"

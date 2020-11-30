@@ -1,15 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Backend;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\UploadExcelFileRequest;
 use App\Jobs\ParseExcelFileToDb;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
-use Illuminate\View\View;
 
 /**
  * Class UploadController
@@ -17,14 +15,6 @@ use Illuminate\View\View;
  */
 class UploadController extends Controller
 {
-    /**
-     * @return Application|Factory|View
-     */
-    public function showUploadForm()
-    {
-        return view('upload.upload-form');
-    }
-
     /**
      * @param UploadExcelFileRequest $request
      * @return JsonResponse

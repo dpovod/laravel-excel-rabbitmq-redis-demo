@@ -29,7 +29,14 @@ import 'vuejs-noty/dist/vuejs-noty.css'
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
-Vue.component('excel-upload-form-component', require('./components/ExcelUploadFormComponent.vue').default);
+// common components
+Vue.component('pagination', require('./components/common/Pagination').default);
+Vue.component('progress-bar', require('./components/common/ProgressBar').default);
+Vue.component('import-status-notifier', require('./components/common/ImportStatusNotifier').default);
+
+// components
+Vue.component('excel-rows-table', require('./components/ExcelRowsTable.vue').default);
+Vue.component('excel-upload-form', require('./components/ExcelUploadForm.vue').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

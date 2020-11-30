@@ -71,8 +71,8 @@
                 </div>
 
                 <div class="links">
-                    <a href="{{ route('showUploadForm')}}">Upload Excel file</a>
-                    <a href="{{ route('listRows')}}">Uploaded data</a>
+                    <a href="{{ route('web.showUploadForm')}}">Upload Excel file</a>
+                    <a href="{{ route('web.listRows')}}">Uploaded data</a>
                 </div>
             </div>
         </div>

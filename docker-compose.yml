@@ -21,6 +21,8 @@ services:
     working_dir: ${APP_BASE_PATH}/
     volumes:
       - ./:${APP_BASE_PATH}/
+    ports:
+      - ${LARAVEL_ECHO_SERVER_EXPOSE_PORT}:${LARAVEL_ECHO_SERVER_PORT}
     environment:
       - APP_BASE_PATH=${APP_BASE_PATH}
       - XDEBUG_CONFIG=enable=${XDEBUG_ENABLE} \
@@ -32,6 +34,10 @@ services:
                        idekey=${XDEBUG_IDE_KEY} \
                        remote_connect_back=${XDEBUG_REMOTE_CONNECT_BACK}
       - PHP_IDE_CONFIG=serverName=laravel-excel-rabbitmq-redis-demo
+    depends_on:
+      - rabbitmq
+      - redis
+      - db
 
   db:
     container_name: "${APP_ENV}.${APP_NAME}.db"
@@ -40,6 +46,7 @@ services:
     environment:
       - MYSQL_USER=${DB_MAIN_SERVICE_USERNAME}
       - MYSQL_PASSWORD${DB_MAIN_SERVICE_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=root
     command: --init-file /data/application/init.sql
     volumes:
       - db-data:/var/lib/mysql
@@ -49,9 +56,6 @@ services:
     container_name: "${APP_ENV}.${APP_NAME}.rabbitmq"
     image: bitnami/rabbitmq:3.8.9
     user: root
-    ports:
-      - '${EXPOSE_RABBITMQ_PORT}:5672'
-      - '${EXPOSE_RABBITMQ_WEB_PORT}:15672'
     environment:
       - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}

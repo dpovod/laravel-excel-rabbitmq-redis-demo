@@ -6,10 +6,9 @@
 .env
 .env.backup
 .phpunit.result.cache
-Homestead.json
-Homestead.yaml
 npm-debug.log
 yarn-error.log
 .idea/
 /public/js
 /public/css
+laravel-echo-server.lock
